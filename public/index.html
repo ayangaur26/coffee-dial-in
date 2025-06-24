@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Coffee Assistant</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@500;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="app-container">
+        <header class="app-header">
+             <!-- Dark Mode Toggle Switch -->
+            <div class="theme-switcher-wrapper">
+                <label class="theme-switcher" for="theme-toggle">
+                    <input type="checkbox" id="theme-toggle" />
+                    <div class="slider round">
+                        <span class="icon light-icon">☀️</span>
+                        <span class="icon dark-icon">🌙</span>
+                    </div>
+                </label>
+            </div>
+
+            <h1>AI Coffee Assistant</h1>
+            <p>Your personalized guide to the perfect brew.</p>
+        </header>
+
+        <main class="main-content">
+            <div class="form-container">
+                <form id="coffee-form" class="form-card">
+                    <h2>Your Setup</h2>
+                    <div class="input-group">
+                        <label for="grinder">Coffee Grinder</label>
+                        <input type="text" id="grinder" name="grinder" placeholder="e.g., Baratza Encore" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="beans">Coffee Beans & Roast</label>
+                        <input type="text" id="beans" name="beans" placeholder="e.g., Medium Roast Colombian" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="machine">Brew Method / Machine</label>
+                        <input type="text" id="machine" name="machine" placeholder="e.g., Hario V60" required>
+                    </div>
+                    <button type="submit" id="submit-button" class="submit-btn">
+                        Brew Recommendation
+                    </button>
+                </form>
+            </div>
+            
+            <div class="result-area">
+                <div id="loading-spinner" class="hidden">
+                     <svg class="spinner" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <p>Our AI Barista is crafting your recipe...</p>
+                </div>
+                <div id="result-container">
+                    <div class="placeholder">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path><path d="M15 5l4 4"></path></svg>
+                        <h3>Ready for your recipe?</h3>
+                        <p>Your AI-powered recommendation will appear here once you fill out your setup details.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <footer class="app-footer">
+            <p>Built by Ayan Gaur.</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
