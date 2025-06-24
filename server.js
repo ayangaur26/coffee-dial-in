@@ -24,8 +24,8 @@ app.use(express.static(path.join(__dirname, 'public'))); // Serve static files
  * parses the JSON response, and sends it to the client.
  */
 app.post('/api/recommendation', async (req, res) => {
-    // --- ADDED: Log the incoming request body for debugging ---
-    // This will show you exactly what the server is receiving in your terminal.
+    // This log is very helpful for debugging on Vercel.
+    // You can view it in your project's "Functions" tab on the Vercel dashboard.
     console.log("Received request on server with body:", req.body);
 
     const { machine, grinder, beans } = req.body;
@@ -33,17 +33,16 @@ app.post('/api/recommendation', async (req, res) => {
 
     // --- Input validation ---
     if (!apiKey) {
-        console.error("Server configuration error: GEMINI_API_KEY not found in .env file.");
+        console.error("Server configuration error: GEMINI_API_KEY is not configured on Vercel.");
         return res.status(500).json({ error: "Server configuration error. The API key is missing." });
     }
     
-    // --- REVISED: More robust server-side validation ---
     if (!machine || !grinder || !beans) {
         console.error("Validation failed. One or more fields are missing.", { machine, grinder, beans });
         return res.status(400).json({ error: "Please provide all required fields: machine, grinder, and beans." });
     }
 
-    // --- Construct the detailed, tool-based prompt for the LLM ---
+    // --- CORRECTED PROMPT ---
     const prompt = `
     You are an expert barista and coffee consultant with web search capabilities. Your task is to provide a starting grind setting recommendation based on a user's coffee setup.
 
@@ -70,9 +69,9 @@ app.post('/api/recommendation', async (req, res) => {
     `;
 
     try {
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+        // Using gemini-pro which is better suited for this kind of detailed JSON generation.
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
         
-        // --- Payload for Gemini API with JSON mode enabled ---
         const payload = {
             contents: [{
                 parts: [{ text: prompt }]
@@ -95,7 +94,6 @@ app.post('/api/recommendation', async (req, res) => {
 
         const data = await apiResponse.json();
 
-        // --- Extract and parse the JSON string from the model's response ---
         if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
             const jsonText = data.candidates[0].content.parts[0].text;
             try {
@@ -107,7 +105,6 @@ app.post('/api/recommendation', async (req, res) => {
                 throw new Error("The AI returned a response that was not valid JSON.");
             }
         } else {
-             // Handle cases where the response structure is unexpected
             console.error('Unexpected API response structure:', JSON.stringify(data, null, 2));
             throw new Error("The AI returned an empty or invalid response.");
         }
@@ -118,7 +115,5 @@ app.post('/api/recommendation', async (req, res) => {
     }
 });
 
-// --- Start the Server ---
-app.listen(port, () => {
-    console.log(`✨ Server is running on http://localhost:${port}`);
-});
+// This is required for Vercel to handle the Express app correctly.
+export default app;
