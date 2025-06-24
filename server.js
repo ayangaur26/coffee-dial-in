@@ -62,23 +62,6 @@ app.post('/api/recommendation', async (req, res) => {
       "unit": "The unit for the setting (e.g., 'clicks from zero', 'main clicks', 'numbered setting')",
       "confidence": "Your confidence in the recommendation ('High', 'Medium', or 'Low')",
       "summary": "Your brief summary and reasoning.",
-      "sources": [
-        {
-          "title": "Source 1 Title",
-          "url": "http://example.com/source1",
-          "snippet": "A relevant quote or snippet from the source."
-        },
-        {
-          "title": "Source 2 Title",
-          "url": "http://example.com/source2",
-          "snippet": "A relevant quote or snippet from the source."
-        },
-        {
-          "title": "Source 3 Title",
-          "url": "http://example.com/source3",
-          "snippet": "A relevant quote or snippet from the source."
-        }
-      ]
     }
     `;
 
