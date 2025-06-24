@@ -5,23 +5,20 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 
 // --- Basic Server Setup ---
-dotenv.config(); // Load environment variables from .env file
+dotenv.config(); // This is for local development, Vercel uses its own system
 const app = express();
-const port = process.env.PORT || 3000;
 
 // --- Get Current Directory Path ---
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // --- Middleware ---
-app.use(cors()); // Enable Cross-Origin Resource Sharing
-app.use(express.json()); // To parse JSON bodies from incoming requests
-app.use(express.static(path.join(__dirname, 'public'))); // Serve static files
+app.use(cors());
+app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
 
 /**
  * --- API Endpoint: /api/recommendation ---
- * Receives coffee setup details, calls the Gemini API with a tool-based prompt,
- * parses the JSON response, and sends it to the client.
  */
 app.post('/api/recommendation', async (req, res) => {
     // This log is very helpful for debugging on Vercel.
@@ -42,7 +39,7 @@ app.post('/api/recommendation', async (req, res) => {
         return res.status(400).json({ error: "Please provide all required fields: machine, grinder, and beans." });
     }
 
-    // --- CORRECTED PROMPT ---
+    // --- Corrected Prompt (from previous turn) ---
     const prompt = `
     You are an expert barista and coffee consultant with web search capabilities. Your task is to provide a starting grind setting recommendation based on a user's coffee setup.
 
@@ -65,17 +62,31 @@ app.post('/api/recommendation', async (req, res) => {
       "unit": "The unit for the setting (e.g., 'clicks from zero', 'main clicks', 'numbered setting')",
       "confidence": "Your confidence in the recommendation ('High', 'Medium', or 'Low')",
       "summary": "Your brief summary and reasoning.",
+      "sources": [
+        {
+          "title": "Source 1 Title",
+          "url": "http://example.com/source1",
+          "snippet": "A relevant quote or snippet from the source."
+        },
+        {
+          "title": "Source 2 Title",
+          "url": "http://example.com/source2",
+          "snippet": "A relevant quote or snippet from the source."
+        },
+        {
+          "title": "Source 3 Title",
+          "url": "http://example.com/source3",
+          "snippet": "A relevant quote or snippet from the source."
+        }
+      ]
     }
     `;
 
     try {
-        // Using gemini-pro which is better suited for this kind of detailed JSON generation.
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
         
         const payload = {
-            contents: [{
-                parts: [{ text: prompt }]
-            }],
+            contents: [{ parts: [{ text: prompt }] }],
             generationConfig: {
                 responseMimeType: "application/json",
             }
@@ -98,7 +109,7 @@ app.post('/api/recommendation', async (req, res) => {
             const jsonText = data.candidates[0].content.parts[0].text;
             try {
                 const parsedJson = JSON.parse(jsonText);
-                res.json(parsedJson); // Send the structured JSON to the client
+                res.json(parsedJson);
             } catch (parseError) {
                 console.error('JSON parsing error:', parseError);
                 console.error('Received text that failed to parse:', jsonText);
@@ -115,5 +126,6 @@ app.post('/api/recommendation', async (req, res) => {
     }
 });
 
-// This is required for Vercel to handle the Express app correctly.
+// --- CRITICAL CHANGE FOR VERCEL ---
+// This line allows Vercel to import your Express app as a serverless function.
 export default app;
