@@ -4,30 +4,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const themeToggle = document.getElementById('theme-toggle');
     const body = document.body;
 
-    // Function to apply the theme
     const applyTheme = (theme) => {
         body.dataset.theme = theme;
-        themeToggle.checked = theme === 'dark';
+        if (themeToggle) {
+            themeToggle.checked = theme === 'dark';
+        }
     };
 
-    // Function to handle toggle change
-    themeToggle.addEventListener('change', () => {
-        const newTheme = themeToggle.checked ? 'dark' : 'light';
-        localStorage.setItem('theme', newTheme);
-        applyTheme(newTheme);
-    });
+    if (themeToggle) {
+        themeToggle.addEventListener('change', () => {
+            const newTheme = themeToggle.checked ? 'dark' : 'light';
+            localStorage.setItem('theme', newTheme);
+            applyTheme(newTheme);
+        });
+    }
 
-    // Check for saved theme in localStorage or user's system preference
     const savedTheme = localStorage.getItem('theme');
     const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
     
-    // Set initial theme on page load
     if (savedTheme) {
         applyTheme(savedTheme);
     } else {
         applyTheme(prefersDark ? 'dark' : 'light');
     }
-
 
     // --- CORE APP LOGIC ---
     const coffeeForm = document.getElementById('coffee-form');
@@ -38,8 +37,6 @@ document.addEventListener('DOMContentLoaded', () => {
         submitButton.disabled = isLoading;
         if (isLoading) {
             submitButton.textContent = 'Analyzing...';
-            // By injecting the spinner inside a div with the 'placeholder' class,
-            // we maintain the container's height and centering, preventing layout shift.
             resultContainer.innerHTML = `
                 <div class="placeholder">
                     <svg class="spinner" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -50,8 +47,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
         }
-        // The "false" state is handled by the displayRecommendation function replacing the content
-        // and the 'finally' block resetting the button.
     };
 
     const displayRecommendation = (result) => {
@@ -71,6 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
             bitter: "Your coffee is likely over-extracted. The water is pulling too much flavor, including bitter compounds. Grind coarser to reduce surface area and extraction.",
         };
         
+        // --- UPDATED: Added the missing "Analysis Sources" section ---
         card.innerHTML = `
             <h2>Your Recommendation</h2>
             <div class="confidence-badge ${confidenceClass}">
@@ -115,18 +111,26 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = { grinder, beans, machine };
 
         try {
+            // The API route is now correctly handled by Vercel's routing
             const response = await fetch('/api/recommendation', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data),
             });
+
+            // Add a check to see if the response was successful
+            if (!response.ok) {
+                 // Try to get a more specific error from the server's response body
+                const errorResult = await response.json();
+                throw new Error(errorResult.error || `Server responded with status: ${response.status}`);
+            }
+
             const result = await response.json();
             displayRecommendation(result);
         } catch (error) {
             console.error('Error:', error);
-            displayRecommendation({ error: 'An unexpected error occurred. Please check the console and try again.' });
+            displayRecommendation({ error: error.message || 'An unexpected error occurred. Please check the console and try again.' });
         } finally {
-            // Reset the button state regardless of success or failure
             submitButton.disabled = false;
             submitButton.textContent = 'Brew Recommendation';
         }
